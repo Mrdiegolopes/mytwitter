@@ -1,7 +1,12 @@
+import sys
+import os
 import unittest
-from src.mytwitter import MyTwitter
+
+# Adiciona o diretório raiz ao path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from src.mytwitter import MyTwitter, Perfil, Tweet, PIException, PDException, PEException, MFPException, SIException
 from src.usuarios import PessoaFisica, PessoaJuridica
-from src.excecoes import PIException, PDException, UJCException
 
 class TestMyTwitter(unittest.TestCase):
     def setUp(self):
@@ -19,7 +24,7 @@ class TestMyTwitter(unittest.TestCase):
 
     def test_cadastrar_usuario_existente(self):
         #testando a tentativa de cadastrar um usuario ja existente.
-        with self.assertRaises(UJCException):
+        with self.assertRaises(PEException):
             self.twitter.criar_perfil(PessoaFisica("@usuario1", "11111111111"))
 
     def test_tweetar_e_timeline(self):
@@ -32,10 +37,18 @@ class TestMyTwitter(unittest.TestCase):
         self.assertEqual(tweets[1].get_mensagem(), "Segundo tweet!")
 
     def test_cancelar_perfil(self):
-        # Testa o cancelamento de um perfil e a tentativa de tweetar após o cancelamento.
-        self.twitter.cancelar_perfil("@usuario1")
+        # Testa cancelar perfil inexistente
+        with self.assertRaises(PIException):
+            self.twitter.cancelar_perfil("usuario_inexistente")
+        
+        # Cria e cancela um perfil
+        perfil = Perfil("usuario1")
+        self.twitter.criar_perfil(perfil)
+        self.twitter.cancelar_perfil("usuario1")
+        
+        # Tenta cancelar perfil já desativado
         with self.assertRaises(PDException):
-            self.twitter.tweetar("@usuario1", "Teste de tweet bloqueado!")
+            self.twitter.cancelar_perfil("usuario1")
 
     def test_perfil_inexistente(self):
         # Testa a tentativa de recuperar a timeline de um perfil inexistente.
