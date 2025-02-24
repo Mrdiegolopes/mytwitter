@@ -1,4 +1,4 @@
-import perfil
+from .perfil import *
 
 class UJCExpetion(Exception):
     def __init__(self, *args):
@@ -10,22 +10,19 @@ class UNCExpetion(Exception):
 
 class RepositorioUsuarios():
     def __init__(self):
-        self.__perfis = []
+        self.__usuarios = {}
 
     def cadastrar(self, usuario):
-        if self.buscar(usuario) is not None:
-            raise UJCExpetion(f"Usuario {perfil.usuario} já está cadastrado!")
-        self.__perfis.append(usuario)
+        if self.buscar(usuario.get_usuario()) is not None:  # Corrigido aqui
+            raise UJCExpetion(f"Usuario {usuario.get_usuario()} já está cadastrado!")  # Corrigido aqui
+        self.__usuarios[usuario.get_usuario()] = usuario
          
-    def buscar(self, name):
-        for usuario in self.__perfis:
-            if perfil.usuario == name:
-                return usuario
-        return None
+    def buscar(self, usuario):
+        return self.__usuarios.get(usuario)
     
     def atualizar(self, usuario):
         for i, u in enumerate(self.__perfis):
-            if u.usuario == perfil.usuario:
-                self.__perfis[i] == usuario
+            if u.usuario == usuario.usuario:  # Corrigido aqui
+                self.__perfis[i] = usuario  # Corrigido aqui (substituição correta com =)
                 return
-        raise UNCExpetion(f"Usuario {perfil.usuario} não está cadastrado")
+        raise UNCExpetion(f"Usuario {usuario.usuario} não está cadastrado")  # Corrigido aqui

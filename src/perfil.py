@@ -1,5 +1,9 @@
+from threading import Lock
+
 class Perfil:
     def __init__(self, usuario):
+        if not usuario.startswith('@'):
+            raise ValueError("Nome de usuário deve começar com @")
         self.__usuario = usuario
         self.__seguidos = set()
         self.__seguidores = set()
@@ -7,30 +11,31 @@ class Perfil:
         self.__ativo = True
         self.__lock = Lock()
 
-    def add_seguidor(self, perfil): #Adiciona um perfil à lista de seguidores.
+    def adicionar_seguidor(self, perfil):
         self.__seguidores.add(perfil)
 
-    def add_seguidos(self, perfil):
+    def seguir(self, perfil):
         self.__seguidos.add(perfil)
 
-    def add_tweet(self, tweet):
+    def adicionar_tweet(self, tweet):
         with self.__lock:
             self.__tweets.append(tweet)
 
     def get_tweets(self):
-        return sorted(self.__tweets, key=lambda t: t.get_data_postagem())
+        with self.__lock:
+            return list(reversed(self.__tweets))
 
     def get_tweet(self, tweet_id):
-        return next((t for t in self.__tweets if t.get_id() == tweet_id), None)
+        with self.__lock:
+            return next((t for t in self.__tweets if t.get_id() == tweet_id), None)
 
     def get_timeline(self):
-        timeline = self.__tweets.copy()
-        for seguido in self.__seguidos:
-            timeline.extend(seguido.get_tweets())
-        return sorted(timeline, key=lambda t: t.get_data_postagem())
-
-    def set_usuario(self, usuario):
-        self.__usuario = usuario
+        with self.__lock:
+            timeline = self.__tweets.copy()
+            for seguido in self.__seguidos:
+                if seguido.is_ativo():
+                    timeline.extend(seguido.get_tweets())
+            return sorted(timeline, key=lambda t: t.get_data_postagem(), reverse=True)
 
     def get_usuario(self):
         return self.__usuario
@@ -40,3 +45,9 @@ class Perfil:
 
     def is_ativo(self):
         return self.__ativo
+    
+    def get_seguidores(self):
+        return list(self.__seguidores)
+    
+    def get_seguidos(self):
+        return list(self.__seguidos)
