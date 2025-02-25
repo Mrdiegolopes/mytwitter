@@ -1,5 +1,5 @@
 
-from .mytwitter import Perfil
+from mytwitter import Perfil
 
 class PessoaFisica(Perfil):
     

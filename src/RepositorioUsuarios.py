@@ -1,4 +1,4 @@
-from .perfil import *
+from perfil import *
 from excecoes import *
 
 class RepositorioUsuarios():

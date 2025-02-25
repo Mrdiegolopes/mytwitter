@@ -1,6 +1,6 @@
-from .excecoes import *              
-from .perfil import *
-from .RepositorioUsuarios import RepositorioUsuarios
+from excecoes import *              
+from perfil import *
+from RepositorioUsuarios import *
 from datetime import datetime
 
 class MyTwitter:
