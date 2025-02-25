@@ -23,11 +23,15 @@ class TestMyTwitter(unittest.TestCase):
         #testando a criação de um usuario.
         self.assertEqual(self.usuario1.get_usuario(), "@usuario1")
         self.assertEqual(self.usuario2.get_cnpj(), "12345678000199")
+        # Verifica se o perfil está ativo por padrão
+        self.assertTrue(self.usuario1.is_ativo())
+        self.assertTrue(self.usuario2.is_ativo())
 
     def test_cadastrar_usuario_existente(self):
         #testando a tentativa de cadastrar um usuario ja existente.
         with self.assertRaises(PEException):
             self.twitter.criar_perfil(PessoaFisica("@usuario1", "11111111111"))
+            self.assertEqual(str(context.exception), "Perfil já existe")
 
     def test_tweetar_e_timeline(self):
         ## Testa a criação de tweets e a recuperação da timeline.
@@ -38,6 +42,11 @@ class TestMyTwitter(unittest.TestCase):
         # Tweets mais recentes primeiro
         self.assertEqual(tweets[0].get_mensagem(), "Segundo tweet!")
         self.assertEqual(tweets[1].get_mensagem(), "Meu primeiro tweet!")
+        # Verifica se a timeline está correta
+        timeline = self.twitter.timeline("@usuario1")
+        self.assertEqual(len(timeline), 2)
+        self.assertEqual(timeline[0].get_mensagem(), "Segundo tweet!")
+        self.assertEqual(timeline[1].get_mensagem(), "Meu primeiro tweet!")
 
     def test_cancelar_perfil(self):
         # Testa cancelar perfil inexistente
@@ -48,6 +57,8 @@ class TestMyTwitter(unittest.TestCase):
         perfil = PessoaFisica("@usuario3", "11111111111")
         self.twitter.criar_perfil(perfil)
         self.twitter.cancelar_perfil("@usuario3")
+        # Verifica se o perfil foi desativado
+        self.assertFalse(perfil.is_ativo())
         
         # Tenta cancelar perfil já desativado
         with self.assertRaises(PDException):
@@ -57,6 +68,15 @@ class TestMyTwitter(unittest.TestCase):
         # Testa a tentativa de recuperar a timeline de um perfil inexistente.
         with self.assertRaises(PIException):
             self.twitter.timeline("@usuarioInexistente")
+        self.assertEqual(str(context.exception), "Perfil inexistente")
+
+    def test_seguir_usuario(self):
+        # Testa seguir outro usuário.
+        self.twitter.seguir("@usuario1", "@empresa1")
+        seguidores = self.twitter.seguidores("@empresa1")
+        seguidos = self.twitter.seguidos("@usuario1")
+        self.assertIn(self.usuario1, seguidores)
+        self.assertIn(self.usuario2, seguidos)
     
 if __name__ == '__main__':
     unittest.main()
